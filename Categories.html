@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Categories</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="style.css">
+  <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-storage.js"></script>
+  <script>
+    // Your Firebase configuration
+    const firebaseConfig = {
+  apiKey: "AIzaSyAR5ni8lQwLU_T-I_UDHBKaitONPHSgc4g",
+  authDomain: "olx-project-5e8e3.firebaseapp.com",
+  projectId: "olx-project-5e8e3",
+  storageBucket: "olx-project-5e8e3.appspot.com",
+  messagingSenderId: "575441980787",
+  appId: "1:575441980787:web:4980a111ab358a39640906",
+  measurementId: "G-PSV9QEE1VW"
+};
+
+  </script>
+  <style>
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Arial', sans-serif;
+    }
+
+    .navbar {
+      background-color: #343a40 !important;
+    }
+
+
+    .navbar-nav .nav-item .btn {
+      border-radius: 25px;
+    }
+
+    .navbar-toggler{
+      background-color: white;
+    }
+
+    .form-container {
+      background-color: #ffffff;
+      border-radius: 15px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      max-width: 600px;
+      margin: 20px auto;
+    }
+
+    .form-container h2 {
+      color: #343a40;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .form-control {
+      border: 1px solid #ced4da;
+      border-radius: 10px;
+      padding: 10px;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-control:focus {
+      border-color: #ff7f00;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 0 0.2rem rgba(255, 127, 0, 0.25);
+    }
+
+
+    .btn-sell {
+      background-color: #ff7f00;
+      color: #fff;
+    }
+
+    .btn-sell:hover {
+      background-color: #e67300;
+      color: #fff;
+    }
+
+    .card {
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      border: none;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-title {
+      color: #ff7f00;
+    }
+
+    #post-form .form-control,
+    #post-form .form-select {
+      border-radius: 10px;
+    }
+
+    .container {
+      margin-top: 20px;
+    }
+
+    @media (max-width: 767px) {
+      .navbar-brand img {
+        width: 50px;
+      }
+
+      .navbar-toggler {
+        background-color: #ff7f00 !important;
+        color: #ced4da;
+      }
+
+      .card {
+        margin-bottom: 20px;
+      }
+    }
+  </style>
+</head>
+<body class="container">
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container">
+      <a class="navbar-brand" href="#"><img src="./images/olx logo.png" width="70px" alt="OLX Logo"></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <form class="d-flex mx-auto">
+          <input class="form-control" type="search" placeholder="Search" aria-label="Search">
+          <button class="btn btn-dark" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+        </form>
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#exampleModal" data-bs-whatever="@mdo">Login</button>  
+          </li>
+          <li class="nav-item">
+            <strong><button class="btn btn-sell" type="button"><i class="fa-solid fa-plus"></i> Sell</button></strong>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <h1 class="my-4">Categories</h1>
+  <div id="categories-list" class="row">
+  </div>
+
+  <div id="subcategories-list" class="row">
+  </div>
+
+  <div id="items-list" class="row">
+  </div>
+
+  <div id="post-form-container" class="row">
+  </div>
+
+  <script>
+
+
+
+    const categories = {
+      "Electronics": {
+        subcategories: ["Mobiles", "Laptops", "Cameras"],
+        items: {
+          "Mobiles": {
+            "Mobile Phones": ["Samsung", "Apple", "Huawei", "Oppo"],
+            "Accessories": ["Chargers", "Headphones", "Cases"],
+            "Smart Watches": ["Apple Watch", "Samsung Galaxy Watch"]
+          },
+          "Laptops": {
+            "Gaming Laptops": ["Dell", "HP", "Asus"],
+            "Business Laptops": ["Lenovo", "Acer", "Microsoft"]
+          },
+          "Cameras": {
+            "DSLR": ["Canon", "Nikon", "Sony"],
+            "Action Cameras": ["GoPro", "DJI", "Sony"]
+          }
+        }
+      },
+      "Vehicles": {
+        subcategories: ["Cars", "Bikes", "Trucks"],
+        items: {
+          "Cars": {
+            "Sedan": ["Toyota", "Honda", "Hyundai"],
+            "SUV": ["Ford", "Chevrolet", "Jeep"],
+            "Hatchback": ["Volkswagen", "Fiat", "Mini"]
+          },
+          "Bikes": {
+            "Sport Bikes": ["Yamaha", "Suzuki", "Kawasaki"],
+            "Cruisers": ["Harley-Davidson", "Indian", "Ducati"]
+          },
+          "Trucks": {
+            "Pickup Trucks": ["Ford", "Chevrolet", "Ram"],
+            "Commercial Trucks": ["Volvo", "Freightliner", "Kenworth"]
+          }
+        }
+      },
+      "Furniture": {
+        subcategories: ["Sofas", "Beds", "Tables"],
+        items: {
+          "Sofas": {
+            "Sectional Sofas": ["Ikea", "Ashley Furniture", "La-Z-Boy"],
+            "Loveseats": ["Wayfair", "West Elm", "Crate & Barrel"]
+          },
+          "Beds": {
+            "King Size Beds": ["Tempur-Pedic", "Serta", "Sealy"],
+            "Queen Size Beds": ["Sleep Number", "Purple", "Casper"]
+          },
+          "Tables": {
+            "Coffee Tables": ["Ikea", "West Elm", "CB2"],
+            "Dining Tables": ["Pottery Barn", "Restoration Hardware", "Ashley Furniture"]
+          }
+        }
+      }
+    };
+
+    const categoriesList = document.getElementById('categories-list');
+    const subcategoriesList = document.getElementById('subcategories-list');
+    const itemsList = document.getElementById('items-list');
+    const postFormContainer = document.getElementById('post-form-container');
+
+    function showItems(category, subcategory, subcategoryItem) {
+      const items = categories[category].items[subcategory][subcategoryItem];
+      itemsList.innerHTML = '';
+
+      items.forEach(item => {
+        const itemCard = document.createElement('div');
+        itemCard.className = 'col-md-4 mb-3';
+        itemCard.innerHTML = `
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">${item}</h5>
+            </div>
+          </div>
+        `;
+        itemsList.appendChild(itemCard);
+      });
+
+      showPostForm(category, subcategory, subcategoryItem);
+    }
+
+    function showSubcategories(category) {
+      const subcategories = categories[category].subcategories;
+      subcategoriesList.innerHTML = '';
+      itemsList.innerHTML = '';
+      
+      subcategories.forEach(subcategory => {
+        const subcategoryCard = document.createElement('div');
+        subcategoryCard.className = 'col-md-4 mb-3';
+        subcategoryCard.innerHTML = `
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">${subcategory}</h5>
+              <ul class="list-group">
+                ${Object.keys(categories[category].items[subcategory]).map(subcategoryItem => `<li class="list-group-item" onclick="showItems('${category}', '${subcategory}', '${subcategoryItem}')">${subcategoryItem}</li>`).join('')}
+              </ul>
+            </div>
+          </div>
+        `;
+        subcategoriesList.appendChild(subcategoryCard);
+      });
+    }
+
+    function showPostForm(category, subcategory, subcategoryItem) {
+      postFormContainer.innerHTML = `
+        <div class="col-12">
+          <div class="form-container">
+            <h2>Post an Item in ${subcategoryItem}</h2>
+            <form id="post-form">
+               <div class="mb-3">
+              <label for="category" class="form-label">Category</label>
+               <input type="text" class="form-control" id="category" value="${category}" readonly>
+             </div>
+             <div class="mb-3">
+               <label for="subcategory" class="form-label">Subcategory</label>
+               <input type="text" class="form-control" id="subcategory" value="${subcategory}" readonly>
+             </div>
+             <div class="mb-3">
+               <label for="subcategoryItem" class="form-label">Subcategory Item</label>
+               <input type="text" class="form-control" id="subcategoryItem" value="${subcategoryItem}" readonly>
+             </div>
+            <div class="mb-3">
+             <label for="productName" class="form-label">Product Name</label>
+             <input type="text" class="form-control" id="productName" required>
+           </div>
+           <div class="mb-3">
+             <label for="productModel" class="form-label">Product Model</label>
+             <input type="text" class="form-control" id="productModel" required>
+           </div>
+           <div class="mb-3">
+             <label for="productDescription" class="form-label">Product Description</label>
+             <textarea class="form-control" id="productDescription" rows="3" required></textarea>
+           </div>
+           <div class="mb-3">
+             <label for="productCondition" class="form-label">Product Condition</label>
+             <select class="form-select" id="productCondition" required>
+               <option value="New">New</option>
+               <option value="Used">Used</option>
+             </select>
+           </div>
+           <div class="mb-3">
+             <label for="productBrand" class="form-label">Product Brand</label>
+             <input type="text" class="form-control" id="productBrand" required>
+           </div>
+           <div class="mb-3">
+             <label for="location" class="form-label">Location</label>
+             <input type="text" class="form-control" id="location" required>
+           </div>
+           <div class="mb-3">
+             <label for="productImages" class="form-label">Product Images</label>
+             <input type="file" class="form-control" id="productImages" multiple required>
+           </div>
+            <div class="mb-3">
+             <label for="productPrice" class="form-label">Product Price</label>
+             <input type="number" class="form-control" id="productPrice" required>
+           </div>
+           <div class="mb-3">
+             <label for="contactNumber" class="form-label">Contact Number</label>
+             <input type="tel" class="form-control" id="contactNumber" required>
+           </div>
+              <button type="submit" class="btn btn-primary">Add Post</button>
+            </form>
+          </div>
+        </div>
+      `;
+
+      const form = document.getElementById('post-form');
+      form.addEventListener('submit', handleFormSubmit);
+    }
+
+    function handleFormSubmit(event) {
+      event.preventDefault();
+
+      const category = document.getElementById('category').value;
+      const subcategory = document.getElementById('subcategory').value;
+      const subcategoryItem = document.getElementById('subcategoryItem').value;
+      const productName = document.getElementById('productName').value;
+      const productModel = document.getElementById('productModel').value;
+      const productDescription = document.getElementById('productDescription').value;
+      const productPrice = document.getElementById('productPrice').value;
+      const productCondition = document.getElementById('productCondition').value;
+      const productBrand = document.getElementById('productBrand').value;
+      const location = document.getElementById('location').value;
+      const contactNumber = document.getElementById('contactNumber').value;
+      const productImages = document.getElementById('productImages').files;
+
+      const storageRef = storage.ref(`olx_images/${category}`);
+      
+      const imagePromises = Array.from(productImages).map(image => {
+        const imageRef = storageRef.child(image.name);
+        return imageRef.put(image).then(() => imageRef.getDownloadURL());
+      });
+
+      Promise.all(imagePromises).then(imageUrls => {
+        db.collection('posts').add({
+          category,
+          subcategory,
+          subcategoryItem,
+          productName,
+          productModel,
+          productDescription,
+          productPrice,
+          productCondition,
+          productBrand,
+          location,
+          contactNumber,
+          imageUrls
+        }).then(() => {
+          alert('Post added successfully!');
+          postFormContainer.innerHTML = ''; // Clear form
+        }).catch(error => {
+          console.error('Error adding post:', error);
+        });
+      });
+    }
+
+    function showCategories() {
+      Object.keys(categories).forEach(category => {
+        const categoryCard = document.createElement('div');
+        categoryCard.className = 'col-md-4 mb-3';
+        categoryCard.innerHTML = `
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">${category}</h5>
+            </div>
+          </div>
+        `;
+        categoryCard.addEventListener('click', () => showSubcategories(category));
+        categoriesList.appendChild(categoryCard);
+      });
+    }
+
+    showCategories();
+
+
+
+    function validateForm() {
+    const requiredFields = [
+    'productName',
+    'productModel',
+    'productDescription',
+    'productPrice',
+    'productCondition',
+    'productBrand',
+    'location',
+    'contactNumber',
+    'productImages'
+  ];
+  
+  const isFormValid = requiredFields.every(field => {
+    const input = document.getElementById(field);
+    if (input.type === 'file') {
+      return input.files.length > 0;
+    } else {
+      return input.value.trim() !== '';
+    }
+  });
+  
+  document.getElementById('submit-button').disabled = !isFormValid;
+}
+
+      const form = document.getElementById('post-form');
+      form.addEventListener('input', validateForm);
+
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="./firebase.js"></script>
+</body>
+</html>
+

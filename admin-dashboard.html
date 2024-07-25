@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin</title>
+</head>
+<body>
+
+    <h1>Admin Dashboard</h1>
+    <!-- In your admin-dashboard.html -->
+    <div id="posts-list" class="container my-4"></div>
+ <script>
+    const postsList = document.getElementById('posts-list');
+
+function renderPost(post) {
+  return `
+    <div class="col-md-4 mb-3">
+      <div class="card">
+        <img src="${post.imageUrls[0]}" class="card-img-top" alt="${post.productName}">
+        <div class="card-body">
+          <h5 class="card-title">${post.productName}</h5>
+          <p class="card-text">${post.productDescription}</p>
+          <p class="card-text"><strong>Price:</strong> $${post.productPrice}</p>
+          <button class="btn btn-warning" onclick="editPost('${post.id}')">Edit</button>
+          <button class="btn btn-danger" onclick="deletePost('${post.id}')">Delete</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function fetchPosts() {
+  db.collection('posts').get().then(querySnapshot => {
+    postsList.innerHTML = '';
+    querySnapshot.forEach(doc => {
+      const post = doc.data();
+      post.id = doc.id; // Store document ID for editing and deleting
+      postsList.innerHTML += renderPost(post);
+    });
+  }).catch(error => {
+    console.error('Error fetching posts:', error);
+  });
+}
+
+function editPost(postId) {
+  // Implement edit functionality here
+  console.log('Edit post:', postId);
+}
+
+function deletePost(postId) {
+  db.collection('posts').doc(postId).delete().then(() => {
+    alert('Post deleted successfully!');
+    fetchPosts(); // Refresh posts list
+  }).catch(error => {
+    console.error('Error deleting post:', error);
+  });
+}
+
+// Fetch and display posts on page load
+fetchPosts();
+
+ </script>
+</body>
+</html>
